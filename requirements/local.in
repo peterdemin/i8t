@@ -1,0 +1,17 @@
+-r ci.in
+
+# fmt
+isort
+black
+pre-commit
+
+# docs
+sphinx
+
+# packages
+pip-compile-multi
+twine
+
+# debugging
+ipython
+ipdb
