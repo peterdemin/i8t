@@ -67,7 +67,7 @@ jobs:
           python -m pip install -r requirements/local.txt
       - name: Run tests
         run:
-          pytest --cov=PROJECTNAME src/PROJECTNAME
+          pytest --cov=i8t src/i8t
 
   check:  # This job does nothing and is only used for the branch protection
     if: always()
