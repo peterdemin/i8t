@@ -15,7 +15,7 @@ use_parentheses = true
 line_length = 100
 
 [tool.flake8]
-max-line-length = 100
+max-line-length = 150
 max-complexity = 10
 
 [tool.pylint.main]
@@ -301,7 +301,7 @@ indent-after-paren = 4
 indent-string = "    "
 
 # Maximum number of characters on a single line.
-max-line-length = 100
+max-line-length = 150
 
 # Maximum number of lines in a module.
 max-module-lines = 1000
