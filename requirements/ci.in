@@ -1,5 +1,8 @@
 -r base.in
 
+flask
+requests-mock
+
 pytest
 pytest-checkdocs
 pytest-cov
@@ -10,3 +13,4 @@ Flake8-pyproject
 mypy
 pylint
 types-requests
+pyright
