@@ -4,26 +4,6 @@ PEX := i8t
 PROJ := i8t
 PROJ_ROOT := src/$(PROJ)
 
-define RENAME_PROJECT_PYSCRIPT
-import os
-
-FILES = ['Makefile', '.github/workflows/main.yml', 'setup.cfg']
-project_name = input("Enter project name: ")
-
-os.mkdir("src")
-os.mkdir(f"src/{project_name}")
-with open (f"src/{project_name}/__init__.py", "wt", encoding="utf-8"):
-	pass
-
-for file in FILES:
-	with open(file, 'rt', encoding='utf-8') as fobj:
-		content = fobj.read()
-	content = content.replace("$(PROJ)", project_name)
-	with open(file, 'wt', encoding='utf-8') as fobj:
-		fobj.write(content)
-endef
-export RENAME_PROJECT_PYSCRIPT
-
 define PRINT_HELP_PYSCRIPT
 import re, sys
 
@@ -69,6 +49,9 @@ release: dist ## package and upload a release
 $(PEX) pex:
 	pex . -e $(PROJ).cli:cli --validate-entry-point -o $(PEX)
 
+.PHONY: check
+check: fmt lint test ## run lint and test
+
 .PHONY: lint
 lint: ## check style with pylint
 	pylint $(PROJ_ROOT)
@@ -107,15 +90,6 @@ fmt: ## Reformat all Python files
 	isort $(PROJ_ROOT)
 	black $(PROJ_ROOT)
 
-
-## Skeleton initialization
 .PHONY: init
 init: virtual_env_set install
 	pre-commit install
-
-.PHONY: rename
-rename:
-	@python -c "$$RENAME_PROJECT_PYSCRIPT"
-	$(MAKE) init
-	git add -A .
-	git commit -am "Initialize the project"
