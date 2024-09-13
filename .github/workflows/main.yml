@@ -73,6 +73,8 @@ jobs:
       - name: Run lint
         run:
           pylint i8t
+      - name: Run mypy
+        run:
           mypy i8t
 
   check:  # This job does nothing and is only used for the branch protection
