@@ -34,7 +34,7 @@ i8t can be used in a few ways:
 
         import flask
         import requests
-        from i8t.instrument.flask_introspection import FlaskIntrospection
+        from i8t.instrument.flask_introspect import FlaskIntrospect
 
         app = flask.Flask(__name__)
 
@@ -42,45 +42,45 @@ i8t can be used in a few ways:
         def test_route():
             return "Test Response", 200
       
-        introspection_client = IntrospectionClient(
+        introspect_client = IntrospectClient(
             session=requests.Session(),
             api_url="https://api.demin.dev/i8t/checkpoints/unique-tenant-id",
             name="app",
         )
-        flask_introspection = FlaskIntrospection(introspection_client)
-        flask_introspection.register(app)
+        flask_introspect = FlaskIntrospect(introspect_client)
+        flask_introspect.register(app)
 
 2. Instrument all outbound HTTP requests (currently only requests is supported):
 
    .. code-block:: python
 
         import requests
-        from i8t.instrument.requests_introspection import RequestsIntrospection
+        from i8t.instrument.requests_introspect import RequestsIntrospect
 
-        introspection_client = IntrospectionClient(
+        introspect_client = IntrospectClient(
             session=requests.Session(),
             api_url="https://api.demin.dev/i8t/checkpoints/unique-tenant-id",
             name="app",
         )
-        requests_introspection = RequestsIntrospection(introspection_client)
-        requests_introspection.register()
+        requests_introspect = RequestsIntrospect(introspect_client)
+        requests_introspect.register()
 
 3. Decorate any function to send its inputs and outputs:
 
    .. code-block:: python
 
-        from i8t.client import IntrospectionClient, IntrospectionDecorator, introspect
+        from i8t.client import IntrospectClient, IntrospectDecorator, introspect
 
         @introspect
         def test_func(first, second):
             return first + second
 
-        introspection_client = IntrospectionClient(
+        introspect_client = IntrospectClient(
             session=requests.Session(),
             api_url="https://api.demin.dev/i8t/checkpoints/unique-tenant-id",
             name="app",
         )
-        decorator = IntrospectionDecorator(introspection_client)
+        decorator = IntrospectDecorator(introspect_client)
         decorator.register()
 
 Once initialized, the inputs and outputs of the instrumented calls are sent to the i8t server,

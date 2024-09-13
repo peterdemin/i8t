@@ -6,19 +6,19 @@ from unittest.mock import patch
 import flask
 import requests
 
-from ..client import IntrospectionClient
-from .flask_introspection import FlaskIntrospection
+from ..client import IntrospectClient
+from .flask_introspect import FlaskIntrospect
 
 
-class TestFlaskIntrospection(unittest.TestCase):
+class TestFlaskIntrospect(unittest.TestCase):
     def setUp(self):
         self.app = flask.Flask(__name__)
         self.mock_session = mock.Mock(requests.Session)
         self.mock_client = mock.Mock(
-            wraps=IntrospectionClient(self.mock_session, "api_url", "test_client")
+            wraps=IntrospectClient(self.mock_session, "api_url", "test_client")
         )
-        self.flask_introspection = FlaskIntrospection(self.mock_client)
-        self.flask_introspection.register(self.app)
+        self.flask_introspect = FlaskIntrospect(self.mock_client)
+        self.flask_introspect.register(self.app)
 
         # A simple route for testing
         @self.app.route("/test", methods=["POST"])
@@ -35,7 +35,7 @@ class TestFlaskIntrospection(unittest.TestCase):
             # Assert: Check if the before_request correctly sets the start time
             self.assertEqual(flask.g.start_time, 1)
 
-        # Assert: Check if the after_request triggers the introspection client
+        # Assert: Check if the after_request triggers the introspect client
         self.mock_client.send.assert_called_once_with(
             {
                 "location": "test_client/flask",
@@ -83,7 +83,7 @@ class TestFlaskIntrospection(unittest.TestCase):
         with self.app.test_client() as client:
             client.get("/test")
 
-            # Assert: after_request sends data to the introspection client
+            # Assert: after_request sends data to the introspect client
             self.mock_client.send.assert_called_once_with(
                 {
                     "location": "test_client/flask",

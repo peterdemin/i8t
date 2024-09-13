@@ -8,7 +8,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-class IntrospectionClient:
+class IntrospectClient:
     def __init__(self, session: requests.Session, api_url: str, name: str) -> None:
         self.api_url = api_url
         self._session = session
@@ -34,10 +34,10 @@ class IntrospectionClient:
         }
 
 
-class IntrospectionDecorator:
+class IntrospectDecorator:
     instance = None
 
-    def __init__(self, client: IntrospectionClient) -> None:
+    def __init__(self, client: IntrospectClient) -> None:
         self._client = client
 
     def register(self) -> None:
@@ -74,8 +74,8 @@ class IntrospectionDecorator:
 def introspect(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if IntrospectionDecorator.instance:
-            return IntrospectionDecorator.instance.wrapper(func, *args, **kwargs)
+        if IntrospectDecorator.instance:
+            return IntrospectDecorator.instance.wrapper(func, *args, **kwargs)
         return func(*args, **kwargs)
 
     return wrapper

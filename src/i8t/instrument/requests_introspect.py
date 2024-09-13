@@ -2,11 +2,11 @@ import time
 
 import requests
 
-from ..client import IntrospectionClient
+from ..client import IntrospectClient
 
 
-class RequestsIntrospection:
-    def __init__(self, client: IntrospectionClient) -> None:
+class RequestsIntrospect:
+    def __init__(self, client: IntrospectClient) -> None:
         self._client = client
         self._original_request = requests.Session.request
         self._session = requests.Session()

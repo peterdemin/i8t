@@ -4,29 +4,29 @@ from unittest import mock
 import requests
 import requests_mock
 
-from ..client import IntrospectionClient
-from .requests_introspection import RequestsIntrospection
+from ..client import IntrospectClient
+from .requests_introspect import RequestsIntrospect
 
 
-class RequestsIntrospectionTestCase(unittest.TestCase):
+class RequestsIntrospectTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.mock_session = mock.Mock(requests.Session)
-        self.introspection_client = mock.Mock(
-            wraps=IntrospectionClient(self.mock_session, "http://api_url", "test"),
+        self.introspect_client = mock.Mock(
+            wraps=IntrospectClient(self.mock_session, "http://api_url", "test"),
             api_url="http://api_url",
         )
-        self.requests_introspection = RequestsIntrospection(self.introspection_client)
-        self.requests_introspection.register()
+        self.requests_introspect = RequestsIntrospect(self.introspect_client)
+        self.requests_introspect.register()
 
     def tearDown(self) -> None:
-        self.requests_introspection.unregister()
+        self.requests_introspect.unregister()
 
     @requests_mock.Mocker()
     def test_instrumented_request_sends_checkpoint_for_success(self, req_mock) -> None:
         req_mock.post("http://external-api", text="ok")
         got = requests.post("http://external-api", json={"key": "value"}, timeout=1)
         assert got.text == "ok"
-        self.introspection_client.send.assert_called_once_with(
+        self.introspect_client.send.assert_called_once_with(
             {
                 "location": "test/requests",
                 "start_ts": mock.ANY,
@@ -41,7 +41,7 @@ class RequestsIntrospectionTestCase(unittest.TestCase):
         req_mock.post("http://external-api/fail", status_code=500)
         got = requests.post("http://external-api/fail", json={"key": "value"}, timeout=1)
         assert got.status_code == 500
-        self.introspection_client.send.assert_called_once_with(
+        self.introspect_client.send.assert_called_once_with(
             {
                 "location": "test/requests",
                 "start_ts": mock.ANY,
@@ -56,7 +56,7 @@ class RequestsIntrospectionTestCase(unittest.TestCase):
         req_mock.post("http://external-api/fail", exc=requests.exceptions.ConnectTimeout)
         with self.assertRaises(requests.exceptions.ConnectTimeout):
             requests.post("http://external-api/fail", json={"key": "value"}, timeout=1)
-        self.introspection_client.send.assert_called_once_with(
+        self.introspect_client.send.assert_called_once_with(
             {
                 "location": "test/requests",
                 "start_ts": mock.ANY,
@@ -71,4 +71,4 @@ class RequestsIntrospectionTestCase(unittest.TestCase):
         req_mock.post("http://api_url", text="no")
         got = requests.post("http://api_url", json={"key": "value"}, timeout=1)
         assert got.text == "no"
-        self.introspection_client.send.assert_not_called()
+        self.introspect_client.send.assert_not_called()

@@ -4,10 +4,10 @@ from unittest import mock
 
 import requests
 
-from .client import IntrospectionClient, IntrospectionDecorator, introspect, logger
+from .client import IntrospectClient, IntrospectDecorator, introspect, logger
 
 
-class TestIntrospectionClient(unittest.TestCase):
+class TestIntrospectClient(unittest.TestCase):
     def setUp(self) -> None:
         logger.setLevel(logging.ERROR)
         logger.addHandler(logging.StreamHandler())
@@ -16,7 +16,7 @@ class TestIntrospectionClient(unittest.TestCase):
         # Arrange
         mock_session = mock.Mock(requests.Session)
         mock_session.post.return_value.status_code = 200
-        client = IntrospectionClient(mock_session, "http://example.com", "test_client")
+        client = IntrospectClient(mock_session, "http://example.com", "test_client")
 
         # Act
         client.send({"key": "value"})
@@ -28,7 +28,7 @@ class TestIntrospectionClient(unittest.TestCase):
         # Arrange
         mock_session = mock.Mock(requests.Session)
         mock_session.post.return_value.status_code = 500
-        client = IntrospectionClient(mock_session, "http://example.com", "test_client")
+        client = IntrospectClient(mock_session, "http://example.com", "test_client")
 
         # Act
         with self.assertLogs(logger=logger, level="DEBUG") as log:
@@ -41,7 +41,7 @@ class TestIntrospectionClient(unittest.TestCase):
         # Arrange
         mock_session = mock.Mock(requests.Session)
         mock_session.post.side_effect = Exception("Test exception")
-        client = IntrospectionClient(mock_session, "http://example.com", "test_client")
+        client = IntrospectClient(mock_session, "http://example.com", "test_client")
 
         # Act
         with self.assertLogs(logger=logger, level="ERROR") as log:
@@ -53,7 +53,7 @@ class TestIntrospectionClient(unittest.TestCase):
     @mock.patch("time.time", return_value=5)
     def test_make_checkpoint(self, _):
         # Arrange
-        client = IntrospectionClient(None, "http://example.com", "test_client")
+        client = IntrospectClient(None, "http://example.com", "test_client")
 
         # Act
         checkpoint = client.make_checkpoint("location1", {"input": "data"}, {"output": "data"}, 1)
@@ -69,12 +69,12 @@ class TestIntrospectionClient(unittest.TestCase):
         self.assertEqual(checkpoint, expected_checkpoint)
 
 
-class TestIntrospectionDecorator(unittest.TestCase):
+class TestIntrospectDecorator(unittest.TestCase):
     @mock.patch("time.time", side_effect=[1000, 2000])
     def test_wrapper_success(self, _):
         # Arrange
-        mock_client = mock.Mock(IntrospectionClient)
-        decorator = IntrospectionDecorator(mock_client)
+        mock_client = mock.Mock(IntrospectClient)
+        decorator = IntrospectDecorator(mock_client)
         decorator.register()
 
         @introspect
@@ -101,8 +101,8 @@ class TestIntrospectionDecorator(unittest.TestCase):
     @mock.patch("time.time", side_effect=[1000, 2000])
     def test_wrapper_exception(self, _):
         # Arrange
-        mock_client = mock.Mock(IntrospectionClient)
-        decorator = IntrospectionDecorator(mock_client)
+        mock_client = mock.Mock(IntrospectClient)
+        decorator = IntrospectDecorator(mock_client)
         decorator.register()
 
         @introspect

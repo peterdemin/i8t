@@ -2,11 +2,11 @@ import time
 
 import flask
 
-from ..client import IntrospectionClient
+from ..client import IntrospectClient
 
 
-class FlaskIntrospection:
-    def __init__(self, client: IntrospectionClient) -> None:
+class FlaskIntrospect:
+    def __init__(self, client: IntrospectClient) -> None:
         self._client = client
 
     def register(self, app: flask.Flask) -> None:
