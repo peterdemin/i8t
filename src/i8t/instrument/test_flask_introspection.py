@@ -39,7 +39,8 @@ class TestFlaskIntrospection(unittest.TestCase):
         self.mock_client.send.assert_called_once_with(
             {
                 "location": "test_client/flask",
-                "timestamp": 30,
+                "start_ts": 1,
+                "finish_ts": 5,
                 "input": json.dumps(
                     {
                         "method": "POST",
@@ -66,7 +67,6 @@ class TestFlaskIntrospection(unittest.TestCase):
                         "body": "Test Response",
                     }
                 ),
-                "metadata": {"duration": 4},
             }
         )
 
@@ -87,9 +87,9 @@ class TestFlaskIntrospection(unittest.TestCase):
             self.mock_client.send.assert_called_once_with(
                 {
                     "location": "test_client/flask",
-                    "timestamp": 30,
+                    "start_ts": 1,
+                    "finish_ts": 5,
                     "input": mock.ANY,
                     "output": mock.ANY,
-                    "metadata": {"duration": 4},
                 }
             )

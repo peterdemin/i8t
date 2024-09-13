@@ -29,10 +29,10 @@ class RequestsIntrospectionTestCase(unittest.TestCase):
         self.introspection_client.send.assert_called_once_with(
             {
                 "location": "test/requests",
-                "timestamp": mock.ANY,
+                "start_ts": mock.ANY,
+                "finish_ts": mock.ANY,
                 "input": '{"method": "post", "url": "http://external-api", "headers": {}, "body": null}',
                 "output": '{"status_code": 200, "headers": {}, "body": "ok"}',
-                "metadata": {"duration": mock.ANY},
             }
         )
 
@@ -44,10 +44,10 @@ class RequestsIntrospectionTestCase(unittest.TestCase):
         self.introspection_client.send.assert_called_once_with(
             {
                 "location": "test/requests",
-                "timestamp": mock.ANY,
+                "start_ts": mock.ANY,
+                "finish_ts": mock.ANY,
                 "input": '{"method": "post", "url": "http://external-api/fail", "headers": {}, "body": null}',
                 "output": '{"status_code": 500, "headers": {}, "body": ""}',
-                "metadata": {"duration": mock.ANY},
             }
         )
 
@@ -59,10 +59,10 @@ class RequestsIntrospectionTestCase(unittest.TestCase):
         self.introspection_client.send.assert_called_once_with(
             {
                 "location": "test/requests",
-                "timestamp": mock.ANY,
+                "start_ts": mock.ANY,
+                "finish_ts": mock.ANY,
                 "input": '{"method": "post", "url": "http://external-api/fail", "headers": {}, "body": null}',
                 "output": '{"error": ""}',
-                "metadata": {"duration": mock.ANY},
             }
         )
 

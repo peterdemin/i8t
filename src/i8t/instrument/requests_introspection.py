@@ -35,7 +35,7 @@ class RequestsIntrospection:
                         "body": kwargs.get("data", None),
                     },
                     {"error": str(exc)},
-                    time.time() - start_time,
+                    start_time,
                 )
             )
             raise
@@ -53,7 +53,7 @@ class RequestsIntrospection:
                     "headers": dict(response.headers),
                     "body": response.text,
                 },
-                time.time() - start_time,
+                start_time,
             )
         )
         return response

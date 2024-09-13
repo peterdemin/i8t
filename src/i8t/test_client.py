@@ -50,21 +50,21 @@ class TestIntrospectionClient(unittest.TestCase):
         # Assert
         self.assertIn("ERROR:i8t.client:Error sending checkpoint", log.output[0])
 
-    @mock.patch("time.time", return_value=1234567890)
+    @mock.patch("time.time", return_value=5)
     def test_make_checkpoint(self, _):
         # Arrange
         client = IntrospectionClient(None, "http://example.com", "test_client")
 
         # Act
-        checkpoint = client.make_checkpoint("location1", {"input": "data"}, {"output": "data"}, 2.5)
+        checkpoint = client.make_checkpoint("location1", {"input": "data"}, {"output": "data"}, 1)
 
         # Assert
         expected_checkpoint = {
             "location": "test_client/location1",
-            "timestamp": 1234567890,
+            "start_ts": 1,
+            "finish_ts": 5,
             "input": '{"input": "data"}',
             "output": '{"output": "data"}',
-            "metadata": {"duration": 2.5},
         }
         self.assertEqual(checkpoint, expected_checkpoint)
 
@@ -114,7 +114,8 @@ class TestIntrospectionDecorator(unittest.TestCase):
             "location": "test_func",
             "input": {"args": (1, 2), "kwargs": {}},
             "output": {"error": "Test exception"},
-            "metadata": {"duration": 1000},
+            "start_ts": 1000,
+            "finish_ts": 2000,
         }
 
         # Act & Assert

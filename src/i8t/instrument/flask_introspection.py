@@ -34,7 +34,7 @@ class FlaskIntrospection:
                     "headers": dict(response.headers),
                     "body": response.get_data(as_text=True),
                 },
-                time.time() - flask.g.start_time,
+                flask.g.start_time,
             )
         )
         return response

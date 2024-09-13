@@ -23,14 +23,14 @@ class IntrospectionClient:
             logger.exception("Error sending checkpoint")
 
     def make_checkpoint(
-        self, location: str, input_data: dict, output_data: dict, duration: float
+        self, location: str, input_data: dict, output_data: dict, start_ts: float
     ) -> dict:
         return {
             "location": f"{self._name}/{location}",
-            "timestamp": time.time(),
+            "start_ts": start_ts,
+            "finish_ts": time.time(),
             "input": json.dumps(input_data),
             "output": json.dumps(output_data),
-            "metadata": {"duration": duration},
         }
 
 
@@ -56,7 +56,7 @@ class IntrospectionDecorator:
                     func.__name__,
                     {"args": args, "kwargs": kwargs},
                     {"error": str(exc)},
-                    time.time() - start_time,
+                    start_time,
                 )
             )
             raise
@@ -65,7 +65,7 @@ class IntrospectionDecorator:
                 func.__name__,
                 {"args": args, "kwargs": kwargs},
                 result,
-                time.time() - start_time,
+                start_time,
             )
         )
         return result
