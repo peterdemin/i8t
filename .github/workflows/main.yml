@@ -70,12 +70,6 @@ jobs:
       - name: Run tests
         run:
           pytest --cov=i8t src/i8t
-      - name: Run lint
-        run:
-          pylint src/i8t
-      - name: Run mypy
-        run:
-          mypy src/i8t
 
   lint:
     runs-on: ubuntu-latest
