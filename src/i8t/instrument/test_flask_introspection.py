@@ -50,7 +50,10 @@ class TestFlaskIntrospection(unittest.TestCase):
                             "Content-Length": "9",
                             "Test-Header": "HeaderValue",
                         },
-                        "body": "Test Body",
+                        "args": {},
+                        "form": {},
+                        "json": None,
+                        "data": "Test Body",
                     }
                 ),
                 "output": json.dumps(

@@ -24,7 +24,10 @@ class FlaskIntrospection:
                     "method": flask.request.method,
                     "url": flask.request.url,
                     "headers": dict(flask.request.headers),
-                    "body": flask.request.get_data(as_text=True),
+                    "args": flask.request.args,
+                    "form": flask.request.form,
+                    "json": flask.request.get_json(silent=True),
+                    "data": flask.request.get_data(as_text=True),
                 },
                 {
                     "status_code": response.status_code,
