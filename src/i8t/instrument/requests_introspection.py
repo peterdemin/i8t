@@ -13,12 +13,12 @@ class RequestsIntrospection:
         self._session_request = self._session.request
 
     def register(self) -> None:
-        requests.Session.request = self.instrumented_request
+        requests.Session.request = self._instrumented_request  # type: ignore[assignment]
 
     def unregister(self) -> None:
-        requests.Session.request = self._original_request
+        requests.Session.request = self._original_request  # type: ignore[assignment]
 
-    def instrumented_request(self, method, url, **kwargs):
+    def _instrumented_request(self, method, url, **kwargs):
         if url == self._client.api_url:
             return self._session_request(method, url, **kwargs)
         start_time = time.time()

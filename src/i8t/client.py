@@ -14,17 +14,17 @@ class IntrospectionClient:
         self._session = session
         self._name = name
 
-    def send(self, data):
+    def send(self, data: dict) -> None:
         try:
             response = self._session.post(self.api_url, json=data)
             if response.status_code != 200:
                 logger.error("Failed to send checkpoint: %r", response.text)
-        except Exception as e:
+        except Exception:  # pylint: disable=broad-except
             logger.exception("Error sending checkpoint")
 
     def make_checkpoint(
         self, location: str, input_data: dict, output_data: dict, duration: float
-    ) -> None:
+    ) -> dict:
         return {
             "location": f"{self._name}/{location}",
             "timestamp": time.time(),
@@ -43,16 +43,19 @@ class IntrospectionDecorator:
     def register(self) -> None:
         self.__class__.instance = self
 
+    def unregister(self) -> None:
+        self.__class__.instance = None
+
     def wrapper(self, func, *args, **kwargs):
         start_time = time.time()
         try:
             result = func(*args, **kwargs)
-        except Exception as e:
+        except Exception as exc:  # pylint: disable=broad-except
             self._client.send(
                 self._client.make_checkpoint(
                     func.__name__,
                     {"args": args, "kwargs": kwargs},
-                    {"error": str(e)},
+                    {"error": str(exc)},
                     time.time() - start_time,
                 )
             )
