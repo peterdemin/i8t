@@ -124,7 +124,3 @@ class TestIntrospectionDecorator(unittest.TestCase):
         mock_client.send.assert_called_once()
         send_call_args = mock_client.send.call_args[0][0]
         self.assertIn("error", send_call_args["output"])
-
-
-if __name__ == "__main__":
-    unittest.main()
