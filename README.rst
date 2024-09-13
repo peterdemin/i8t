@@ -19,6 +19,8 @@ I8t - Introspect client library
 Installation
 ------------
 
+.. code-block:: bash
+
     pip install i8t
 
 Usage
@@ -26,7 +28,9 @@ Usage
 
 i8t can be used in a few ways:
 
-1. Instrument all inbound web requests (currently only Flask is supported)::
+1. Instrument all inbound web requests (currently only Flask is supported):
+
+   .. code-block:: python
 
         import flask
         import requests
@@ -46,7 +50,9 @@ i8t can be used in a few ways:
         flask_introspection = FlaskIntrospection(introspection_client)
         flask_introspection.register(app)
 
-2. Instrument all outbound HTTP requests (currently only requests is supported)::
+2. Instrument all outbound HTTP requests (currently only requests is supported):
+
+   .. code-block:: python
 
         import requests
         from i8t.instrument.requests_introspection import RequestsIntrospection
@@ -59,7 +65,9 @@ i8t can be used in a few ways:
         requests_introspection = RequestsIntrospection(introspection_client)
         requests_introspection.register()
 
-3. Decorate any function to send its inputs and outputs::
+3. Decorate any function to send its inputs and outputs:
+
+   .. code-block:: python
 
         from i8t.client import IntrospectionClient, IntrospectionDecorator, introspect
 
