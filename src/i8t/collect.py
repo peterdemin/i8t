@@ -63,7 +63,8 @@ def main() -> None:
         checkpoint_fetcher=CheckpointFetcher(api_url=sys.argv[1], session=requests.Session()),
         checkpoint_collector=CheckpointCollector(),
     )
-    for line in checkpoint_poller.run_forever():
+    for i, line in enumerate(checkpoint_poller.run_forever()):
+        print(f"\rCollected {i+1} checkpoints. Press Ctrl+C to stop.", file=sys.stderr, end="")
         print(line)
 
 
