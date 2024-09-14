@@ -2,7 +2,7 @@
 
 PEX := i8t
 PROJ := i8t
-PROJ_ROOT := src/$(PROJ)
+PROJ_ROOT := src/$(PROJ) toy
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -59,7 +59,7 @@ lint: ## check style with pylint
 
 .PHONY: test
 test: ## run test suite
-	pytest --cov=$(PROJ) $(PROJ_ROOT)
+	pytest --cov=$(PROJ) --cov=toy $(PROJ_ROOT)
 
 .PHONY: install
 install: ## install the package with dev dependencies
