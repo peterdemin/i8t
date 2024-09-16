@@ -4,7 +4,12 @@ from unittest import mock
 
 import pytest
 
-from i8t.testing.loader import load_flask_calls, load_request_mocks, load_test_cases
+from i8t.testing.loader import (
+    load_flask_calls,
+    load_request_mocks,
+    load_test_cases,
+    patch_checkpoint,
+)
 
 from .app import app, main, process
 
@@ -22,7 +27,10 @@ def test_process(case):
 @pytest.mark.parametrize(*load_flask_calls(SESSION, "/another"))
 def test_another_endpoint(case):
     with app.test_client() as client:
-        response = client.open(case.url, method=case.method, json=case.json, headers=case.headers)
+        with patch_checkpoint(SESSION, "toy.app.process"):
+            response = client.open(
+                case.url, method=case.method, json=case.json, headers=case.headers
+            )
     assert response.status_code == case.expected_status_code
     assert response.json == json.loads(case.expected_body)
 

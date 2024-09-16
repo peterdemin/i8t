@@ -50,78 +50,146 @@ class TestIntrospectClient(unittest.TestCase):
         # Assert
         self.assertIn("ERROR:i8t.client:Error sending checkpoint", log.output[0])
 
-    @mock.patch("time.time", return_value=5)
-    def test_make_checkpoint(self, _):
+    def test_make_checkpoint(self):
         # Arrange
         client = IntrospectClient(None, "http://example.com", "test_client")
 
         # Act
-        checkpoint = client.make_checkpoint("location1", {"input": "data"}, {"output": "data"}, 1)
+        with mock.patch("time.time", return_value=5):
+            checkpoint = client.make_checkpoint(
+                "location1", {"input": "data"}, {"output": "data"}, 1
+            )
 
         # Assert
-        expected_checkpoint = {
-            "location": "test_client/location1",
-            "start_ts": 1,
-            "finish_ts": 5,
-            "input": '{"input": "data"}',
-            "output": '{"output": "data"}',
-        }
-        self.assertEqual(checkpoint, expected_checkpoint)
+        self.assertEqual(
+            checkpoint,
+            {
+                "location": "test_client/location1",
+                "start_ts": 1,
+                "finish_ts": 5,
+                "input": '{"input": "data"}',
+                "output": '{"output": "data"}',
+            },
+        )
 
 
 class TestIntrospectDecorator(unittest.TestCase):
-    @mock.patch("time.time", side_effect=[1000, 2000])
-    def test_wrapper_success(self, _):
-        # Arrange
-        mock_client = mock.Mock(IntrospectClient)
-        decorator = IntrospectDecorator(mock_client)
-        decorator.register()
+    def setUp(self) -> None:
+        self.mock_session = mock.Mock(requests.Session)
+        self.mock_session.post.return_value.status_code = 200
+        self.decorator = IntrospectDecorator(
+            IntrospectClient(self.mock_session, "http://example.com", "test_client")
+        )
+        self.decorator.register()
 
+    def tearDown(self) -> None:
+        self.decorator.unregister()
+
+    def test_function_introspected(self):
+        with mock.patch("time.time", side_effect=[1000, 2000]):
+            result = dummy_func(1, 2)
+
+        self.assertEqual(result, 3)
+        self.mock_session.post.assert_called_once_with(
+            "http://example.com",
+            json={
+                "location": "test_client/i8t.test_client:dummy_func",
+                "start_ts": 1000,
+                "finish_ts": 2000,
+                "input": '{"args": [1, 2], "kwargs": {}}',
+                "output": "3",
+            },
+        )
+
+    def test_method_introspected(self):
+        dummy = Dummy()
+        with mock.patch("time.time", side_effect=[1000, 2000]):
+            result = dummy.method(3)
+
+        self.assertEqual(result, 6)
+        self.mock_session.post.assert_called_once_with(
+            "http://example.com",
+            json={
+                "location": "test_client/i8t.test_client:Dummy.method",
+                "start_ts": 1000,
+                "finish_ts": 2000,
+                "input": '{"args": [3], "kwargs": {}}',
+                "output": "6",
+            },
+        )
+
+    def test_nested_function_introspected(self):
+        dummy = Dummy()
+        with mock.patch("time.time", side_effect=[1, 2, 3, 4]):
+            result = dummy.nested(3)
+
+        self.assertEqual(result, 12)
+        assert self.mock_session.post.call_args_list == [
+            mock.call(
+                "http://example.com",
+                json={
+                    "location": "test_client/i8t.test_client:Dummy.nested.<locals>.func",
+                    "start_ts": 2,
+                    "finish_ts": 3,
+                    "input": '{"args": [3, 6], "kwargs": {}}',
+                    "output": "9",
+                },
+            ),
+            mock.call(
+                "http://example.com",
+                json={
+                    "location": "test_client/i8t.test_client:Dummy.nested",
+                    "start_ts": 1,
+                    "finish_ts": 4,
+                    "input": '{"args": [3], "kwargs": {}}',
+                    "output": "12",
+                },
+            ),
+        ]
+
+    def test_unregister_disables(self):
+        # Disable introspect decorator and check that checkpoint is not sent
+        self.decorator.unregister()
+        self.assertEqual(dummy_func(1, 2), 3)
+        self.mock_session.post.assert_not_called()
+
+    def test_exception_introspected(self):
+        # Act & Assert
+        with mock.patch("time.time", side_effect=[1000, 2000]):
+            with self.assertRaises(ValueError):
+                dummy_raise(1, 2)
+
+        self.mock_session.post.assert_called_once_with(
+            "http://example.com",
+            json={
+                "location": "test_client/i8t.test_client:dummy_raise",
+                "start_ts": 1000,
+                "finish_ts": 2000,
+                "input": '{"args": [1, 2], "kwargs": {}}',
+                "output": '{"error": "Test exception"}',
+            },
+        )
+
+
+@introspect
+def dummy_func(first, second):
+    return first + second
+
+
+@introspect
+def dummy_raise(first, second):
+    raise ValueError("Test exception")
+
+
+class Dummy:
+    @introspect
+    def method(self, param: int) -> int:
+        return param * 2
+
+    @introspect
+    def nested(self, param: int) -> int:
         @introspect
-        def test_func(first, second):
+        def func(first, second):
             return first + second
 
-        # Act
-        result = test_func(1, 2)
-
-        # Assert
-        self.assertEqual(result, 3)
-        mock_client.send.assert_called_once()
-
-        # Arrange
-        decorator.unregister()
-
-        # Act
-        result = test_func(1, 2)
-
-        # Assert
-        self.assertEqual(result, 3)
-        mock_client.send.assert_called_once()
-
-    @mock.patch("time.time", side_effect=[1000, 2000])
-    def test_wrapper_exception(self, _):
-        # Arrange
-        mock_client = mock.Mock(IntrospectClient)
-        decorator = IntrospectDecorator(mock_client)
-        decorator.register()
-
-        @introspect
-        def test_func(first, second):
-            raise ValueError("Test exception")
-
-        # Set up the return value for make_checkpoint mock
-        mock_client.make_checkpoint.return_value = {
-            "location": "test_func",
-            "input": {"args": (1, 2), "kwargs": {}},
-            "output": {"error": "Test exception"},
-            "start_ts": 1000,
-            "finish_ts": 2000,
-        }
-
-        # Act & Assert
-        with self.assertRaises(ValueError):
-            test_func(1, 2)
-
-        mock_client.send.assert_called_once()
-        send_call_args = mock_client.send.call_args[0][0]
-        self.assertIn("error", send_call_args["output"])
+        return func(param, param * 2) + param

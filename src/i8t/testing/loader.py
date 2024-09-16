@@ -3,6 +3,7 @@ import fnmatch
 import json
 from dataclasses import dataclass
 from typing import Any, Dict, Iterator, List, Tuple
+from unittest import mock
 from urllib.parse import urlparse
 
 import requests_mock
@@ -56,7 +57,7 @@ def load_session(jsonl: str) -> List[dict]:
 
 
 def filter_by_location(location: str, records: List[dict]) -> List[dict]:
-    return [record for record in records if record["location"].partition("/")[2] == location]
+    return [record for record in records if record["location"].endswith(location)]
 
 
 def filter_by_url_path(path: str, records: List[dict]) -> List[dict]:
@@ -92,3 +93,18 @@ def load_request_mocks(jsonl: str) -> Iterator:
                 status_code=record["output"]["status_code"],
             )
         yield
+
+
+@contextlib.contextmanager
+def patch_checkpoint(jsonl: str, name: str) -> Iterator:
+    checkpoints = [
+        TestCase.from_record(record) for record in filter_by_location(name, load_session(jsonl))
+    ]
+    assert checkpoints, f"No checkpoints found for {name}"
+    with mock.patch(
+        name, autospec=True, side_effect=[checkpoint.expected for checkpoint in checkpoints]
+    ) as mocked:
+        yield
+        assert mocked.call_args_list == [
+            mock.call(*checkpoint.args, **checkpoint.kwargs) for checkpoint in checkpoints
+        ]

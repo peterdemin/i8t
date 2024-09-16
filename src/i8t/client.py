@@ -2,6 +2,7 @@ import json
 import logging
 import time
 from functools import wraps
+from typing import Optional
 
 import requests
 
@@ -35,7 +36,7 @@ class IntrospectClient:
 
 
 class IntrospectDecorator:
-    instance = None
+    instance: Optional["IntrospectDecorator"] = None
 
     def __init__(self, client: IntrospectClient) -> None:
         self._client = client
@@ -48,26 +49,34 @@ class IntrospectDecorator:
 
     def wrapper(self, func, *args, **kwargs):
         start_time = time.time()
+        is_method = False
+        if func.__qualname__ != func.__name__:
+            # Could be method or nested function or both
+            # https://peps.python.org/pep-3155/
+            class_name = ""
+            if args:
+                try:
+                    class_name = args[0].__class__.__name__
+                except AttributeError:
+                    pass
+            if func.__qualname__ == f"{class_name}.{func.__name__}":
+                is_method = True
+        location = f"{func.__module__}:{func.__qualname__}"
+        result = None
         try:
             result = func(*args, **kwargs)
         except Exception as exc:  # pylint: disable=broad-except
+            result = {"error": str(exc)}
+            raise
+        finally:
             self._client.send(
                 self._client.make_checkpoint(
-                    func.__name__,
-                    {"args": args, "kwargs": kwargs},
-                    {"error": str(exc)},
+                    location,
+                    {"args": args[1:] if is_method else args, "kwargs": kwargs},
+                    result,
                     start_time,
                 )
             )
-            raise
-        self._client.send(
-            self._client.make_checkpoint(
-                func.__name__,
-                {"args": args, "kwargs": kwargs},
-                result,
-                start_time,
-            )
-        )
         return result
 
 
