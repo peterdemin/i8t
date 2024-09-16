@@ -11,7 +11,7 @@ app = flask.Flask(__name__)
 def main(app_: flask.Flask) -> None:
     introspect_client = IntrospectClient(
         session=requests.Session(),
-        api_url="https://api.demin.dev/i8t/t",
+        api_url="https://api.demin.dev/i8t/toy",
         name="app",
     )
     FlaskIntrospect(introspect_client).register(app_)
