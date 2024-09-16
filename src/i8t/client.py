@@ -61,7 +61,7 @@ class IntrospectDecorator:
                     pass
             if func.__qualname__ == f"{class_name}.{func.__name__}":
                 is_method = True
-        location = f"{func.__module__}:{func.__qualname__}"
+        location = f"{func.__module__}.{func.__qualname__}"
         result = None
         try:
             result = func(*args, **kwargs)

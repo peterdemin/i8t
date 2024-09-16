@@ -93,7 +93,7 @@ class TestIntrospectDecorator(unittest.TestCase):
         self.mock_session.post.assert_called_once_with(
             "http://example.com",
             json={
-                "location": "test_client/i8t.test_client:dummy_func",
+                "location": "test_client/i8t.test_client.dummy_func",
                 "start_ts": 1000,
                 "finish_ts": 2000,
                 "input": '{"args": [1, 2], "kwargs": {}}',
@@ -110,7 +110,7 @@ class TestIntrospectDecorator(unittest.TestCase):
         self.mock_session.post.assert_called_once_with(
             "http://example.com",
             json={
-                "location": "test_client/i8t.test_client:Dummy.method",
+                "location": "test_client/i8t.test_client.Dummy.method",
                 "start_ts": 1000,
                 "finish_ts": 2000,
                 "input": '{"args": [3], "kwargs": {}}',
@@ -128,7 +128,7 @@ class TestIntrospectDecorator(unittest.TestCase):
             mock.call(
                 "http://example.com",
                 json={
-                    "location": "test_client/i8t.test_client:Dummy.nested.<locals>.func",
+                    "location": "test_client/i8t.test_client.Dummy.nested.<locals>.func",
                     "start_ts": 2,
                     "finish_ts": 3,
                     "input": '{"args": [3, 6], "kwargs": {}}',
@@ -138,7 +138,7 @@ class TestIntrospectDecorator(unittest.TestCase):
             mock.call(
                 "http://example.com",
                 json={
-                    "location": "test_client/i8t.test_client:Dummy.nested",
+                    "location": "test_client/i8t.test_client.Dummy.nested",
                     "start_ts": 1,
                     "finish_ts": 4,
                     "input": '{"args": [3], "kwargs": {}}',
@@ -162,7 +162,7 @@ class TestIntrospectDecorator(unittest.TestCase):
         self.mock_session.post.assert_called_once_with(
             "http://example.com",
             json={
-                "location": "test_client/i8t.test_client:dummy_raise",
+                "location": "test_client/i8t.test_client.dummy_raise",
                 "start_ts": 1000,
                 "finish_ts": 2000,
                 "input": '{"args": [1, 2], "kwargs": {}}',

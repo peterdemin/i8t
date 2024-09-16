@@ -22,17 +22,18 @@ def main(app_: flask.Flask) -> None:
 
 @app.route("/example", methods=["GET", "POST"])
 def example_route():
-    requests.post(
+    response = requests.post(
         app.url_for("another", _external=True),
-        json={"number": 7},
+        json={"number": flask.request.args.get("number", 0)},
         timeout=1.0,
     )
-    return {"message": "This is an example route."}
+    response.raise_for_status()
+    return {"message": response.text}
 
 
 @app.route("/another", methods=["GET", "POST"])
 def another():
-    return {"message": process(flask.request.json)}
+    return process(flask.request.json)
 
 
 @introspect
