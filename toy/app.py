@@ -24,21 +24,21 @@ def main(app_: flask.Flask) -> None:
 def example_route():
     response = requests.post(
         app.url_for("another", _external=True),
-        json={"number": flask.request.args.get("number", 0)},
+        json={"number": int(flask.request.values.get("number", "0"))},
         timeout=1.0,
     )
     response.raise_for_status()
-    return {"message": response.text}
+    return {"message": response.json()}
 
 
 @app.route("/another", methods=["GET", "POST"])
 def another():
-    return process(flask.request.json)
+    return {"square": process(flask.request.json)}
 
 
 @introspect
 def process(payload):
-    return {"square": payload.get("number", 0) ** 2}
+    return payload.get("number", 0) ** 2
 
 
 if __name__ == "__main__":
