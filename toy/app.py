@@ -33,12 +33,12 @@ def example_route():
 
 @app.route("/another", methods=["GET", "POST"])
 def another():
-    return {"square": process(flask.request.json)}
+    return {"squares": [square(number) for number in range(flask.request.json.get("number", 0))]}
 
 
 @introspect
-def process(payload):
-    return payload.get("number", 0) ** 2
+def square(number: int) -> int:
+    return number**2
 
 
 if __name__ == "__main__":

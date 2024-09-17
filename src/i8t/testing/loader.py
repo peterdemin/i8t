@@ -2,7 +2,7 @@ import contextlib
 import fnmatch
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 from unittest import mock
 from urllib.parse import urlparse
 
@@ -10,22 +10,32 @@ import requests_mock
 
 
 @dataclass
-class TestCase:
+class TimeRange:
+    start_ts: float
+    finish_ts: float
+
+
+@dataclass
+class Checkpoint(TimeRange):
     args: List[Any]
     kwargs: Dict[str, Any]
     expected: Any
+    qualname: str
 
     @classmethod
-    def from_record(cls, record: dict) -> "TestCase":
-        return TestCase(
+    def from_record(cls, record: dict) -> "Checkpoint":
+        return cls(
+            start_ts=record["start_ts"],
+            finish_ts=record["finish_ts"],
             args=record["input"]["args"],
             kwargs=record["input"]["kwargs"],
             expected=record["output"],
+            qualname=record["location"].partition("/")[2],
         )
 
 
 @dataclass
-class HTTPCall:  # pylint: disable=too-many-instance-attributes
+class HTTPCall(TimeRange):  # pylint: disable=too-many-instance-attributes
     url: str
     method: str
     headers: Dict[str, str]
@@ -39,6 +49,8 @@ class HTTPCall:  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_record(cls, record: dict) -> "HTTPCall":
         return cls(
+            start_ts=record["start_ts"],
+            finish_ts=record["finish_ts"],
             url=record["input"]["url"],
             method=record["input"]["method"],
             headers=record["input"]["headers"],
@@ -57,20 +69,35 @@ def load_session(jsonl: str) -> List[dict]:
 
 
 def filter_by_location(location: str, records: List[dict]) -> List[dict]:
-    return [record for record in records if record["location"].endswith(location)]
+    return [
+        record
+        for record in records
+        if fnmatch.fnmatch(record["location"].partition("/")[2], "*" + location)
+    ]
 
 
 def filter_by_url_path(path: str, records: List[dict]) -> List[dict]:
     return [record for record in records if match_path(path, record["input"]["url"])]
 
 
+def filter_within_time_range(within: Optional[TimeRange], records: List[dict]) -> List[dict]:
+    if not within:
+        return records
+    return [
+        record
+        for record in records
+        if record["start_ts"] >= within.start_ts and record["finish_ts"] <= within.finish_ts
+    ]
+
+
 def match_path(path: str, url: str) -> bool:
     return fnmatch.fnmatch(urlparse(url).path, path)
 
 
-def load_test_cases(jsonl: str, location: str) -> Tuple[str, List[TestCase]]:
+def load_test_cases(jsonl: str, location: str) -> Tuple[str, List[Checkpoint]]:
     return "case", [
-        TestCase.from_record(record) for record in filter_by_location(location, load_session(jsonl))
+        Checkpoint.from_record(record)
+        for record in filter_by_location(location, load_session(jsonl))
     ]
 
 
@@ -82,9 +109,10 @@ def load_flask_calls(jsonl: str, path: str) -> Tuple[str, List[HTTPCall]]:
 
 
 @contextlib.contextmanager
-def load_request_mocks(jsonl: str) -> Iterator:
+def load_requests_mocks(jsonl: str, within: Optional[TimeRange] = None) -> Iterator:
+    records = filter_within_time_range(within, filter_by_location("requests", load_session(jsonl)))
     with requests_mock.Mocker() as mocker:
-        for record in filter_by_location("requests", load_session(jsonl)):
+        for record in records:
             mocker.register_uri(
                 record["input"]["method"],
                 record["input"]["url"],
@@ -95,16 +123,53 @@ def load_request_mocks(jsonl: str) -> Iterator:
         yield
 
 
+@dataclass
+class Patch:
+    name: str
+    checkpoints: List[Checkpoint]
+
+
+@dataclass
+class CheckpointMock:
+    name: str
+    checkpoints: List[Checkpoint]
+    mock_obj: mock.Mock
+    call_args_list: List[Any]
+
+
 @contextlib.contextmanager
-def patch_checkpoint(jsonl: str, name: str) -> Iterator:
-    checkpoints = [
-        TestCase.from_record(record) for record in filter_by_location(name, load_session(jsonl))
-    ]
-    assert checkpoints, f"No checkpoints found for {name}"
-    with mock.patch(
-        name, autospec=True, side_effect=[checkpoint.expected for checkpoint in checkpoints]
-    ) as mocked:
-        yield
-        assert mocked.call_args_list == [
-            mock.call(*checkpoint.args, **checkpoint.kwargs) for checkpoint in checkpoints
-        ]
+def patch_checkpoints(jsonl: str, name: str = "", within: Optional[TimeRange] = None) -> Iterator:
+    records = filter_within_time_range(within, filter_by_location(name, load_session(jsonl)))
+    if not records:
+        yield []
+        return
+    by_name: Dict[str, List[Checkpoint]] = {}
+    for record in records:
+        checkpoint = Checkpoint.from_record(record)
+        by_name.setdefault(checkpoint.qualname, []).append(checkpoint)
+    patches = [Patch(name=name, checkpoints=checkpoints) for name, checkpoints in by_name.items()]
+    with patch_many(patches) as expected_calls:
+        yield expected_calls
+
+
+@contextlib.contextmanager
+def patch_many(patches: List[Patch]) -> Iterator:
+    patch = patches[0]
+    side_effect = [checkpoint.expected for checkpoint in patch.checkpoints]
+    with mock.patch(patch.name, autospec=True, side_effect=side_effect) as mocked:
+        checkpoint_mock = CheckpointMock(
+            name=patch.name,
+            checkpoints=patch.checkpoints,
+            mock_obj=mocked,
+            call_args_list=[
+                mock.call(*checkpoint.args, **checkpoint.kwargs) for checkpoint in patch.checkpoints
+            ],
+        )
+        if patches[1:]:
+            with patch_many(patches[1:]) as expected_calls:
+                yield [checkpoint_mock] + expected_calls
+        else:
+            yield [checkpoint_mock]
+        # assert mocked.call_args_list == [
+        #     mock.call(*checkpoint.args, **checkpoint.kwargs) for checkpoint in patch.checkpoints
+        # ]
