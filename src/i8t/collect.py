@@ -1,7 +1,7 @@
 import json
 import sys
 import time
-from typing import Iterable, Set
+from typing import Iterable, Optional, Set
 
 import requests
 
@@ -26,9 +26,14 @@ class CheckpointFetcher:
     def fetch(self) -> Iterable[str]:
         response = self._session.get(self._api_url, timeout=1)
         for record in response.json():
-            record["input"] = json.loads(record["input"])
-            record["output"] = json.loads(record["output"])
-            yield json.dumps(record)
+            yield json.dumps(self._parse(record))
+
+    def _parse(self, record: dict) -> dict:
+        return dict(
+            record,
+            input=json.loads(record["input"]),
+            output=json.loads(record["output"]),
+        )
 
 
 class CheckpointPoller:
@@ -58,9 +63,12 @@ class CheckpointPoller:
                 print(f"WARNING: {exc}", file=sys.stderr)
 
 
-def main() -> None:
+def main(session: Optional[requests.Session] = None) -> None:
     checkpoint_poller = CheckpointPoller(
-        checkpoint_fetcher=CheckpointFetcher(api_url=sys.argv[1], session=requests.Session()),
+        checkpoint_fetcher=CheckpointFetcher(
+            api_url=sys.argv[1],
+            session=session or requests.Session(),
+        ),
         checkpoint_collector=CheckpointCollector(),
     )
     for i, line in enumerate(checkpoint_poller.run_forever()):

@@ -4,45 +4,61 @@ from unittest import mock
 
 import pytest
 
-from i8t.testing.loader import (
-    load_flask_calls,
-    load_requests_mocks,
-    load_test_cases,
-    patch_checkpoints,
+from i8t.adapters.decorator_adapter.loader import DecoratedCase, DecoratedPatch
+from i8t.adapters.flask_adapter.loader import FlaskCase
+from i8t.adapters.requests_adapter.loader import RequestsMock
+from i8t.testing.session import IntrospectSession
+
+from .app import MultiplyingCalculator, app, main, square
+
+SESSION = IntrospectSession.from_jsonl(
+    os.path.join(
+        os.path.dirname(__file__),
+        "testdata",
+        "session-01.jsonl",
+    ),
+    main_is="toy.app",
 )
 
-from .app import app, main, square
 
-HERE = os.path.dirname(__file__)
-TESTDATA = os.path.join(HERE, "testdata")
-SESSION = os.path.join(TESTDATA, "session-01.jsonl")
+@pytest.mark.parametrize("case", DecoratedCase.load(SESSION, "identity"))
+def test_identity(case):
+    calc = MultiplyingCalculator()
+    assert calc.identity(*case.args, *case.kwargs) == case.expected
 
 
-@pytest.mark.parametrize(*load_test_cases(SESSION, "square"))
+@pytest.mark.parametrize("case", DecoratedCase.load(SESSION, "mul"))
+def test_mul(case):
+    calc = MultiplyingCalculator()
+    assert calc.mul(*case.args, *case.kwargs) == case.expected
+
+
+@pytest.mark.parametrize("case", DecoratedCase.load(SESSION, "square"))
 def test_square(case):
-    assert square(*case.args, *case.kwargs) == case.expected
+    with DecoratedPatch.activate(
+        SESSION, "MultiplyingCalculator.*", within=case
+    ) as decorated_patches:
+        assert square(*case.args, *case.kwargs) == case.expected
+    for decorated_patch in decorated_patches:
+        assert decorated_patch.mock_obj.call_args_list == decorated_patch.call_args_list
 
 
-@pytest.mark.parametrize(*load_flask_calls(SESSION, "/another"))
-def test_another_endpoint(case):
-    with patch_checkpoints(SESSION, "toy.*", within=case) as expected_calls:
+@pytest.mark.parametrize("case", FlaskCase.load(SESSION, "/another"))
+def test_another_endpoint(case: FlaskCase):
+    with DecoratedPatch.activate(SESSION, ".square", within=case) as decorated_patches:
         with app.test_client() as client:
-            response = client.open(
-                case.url, method=case.method, json=case.json, headers=case.headers
-            )
-    for checkpoint in expected_calls:
-        assert checkpoint.mock_obj.call_args_list == checkpoint.call_args_list
+            response = case.call(client)
     assert response.status_code == case.expected_status_code
     assert response.json == json.loads(case.expected_body)
+    for decorated_patch in decorated_patches:
+        assert decorated_patch.mock_obj.call_args_list == decorated_patch.call_args_list
 
 
-@pytest.mark.parametrize(*load_flask_calls(SESSION, "/example"))
-def test_example_endpoint(case):
-    with load_requests_mocks(SESSION, within=case):
+@pytest.mark.parametrize("case", FlaskCase.load(SESSION, "/example"))
+def test_example_endpoint(case: FlaskCase) -> None:
+    with RequestsMock.activate(SESSION, within=case):
         with app.test_client() as client:
-            response = client.open(
-                case.url, method=case.method, json=case.json, headers=case.headers
-            )
+            response = case.call(client)
     assert response.status_code == case.expected_status_code
     assert response.json == json.loads(case.expected_body)
 

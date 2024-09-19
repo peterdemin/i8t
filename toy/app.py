@@ -1,7 +1,9 @@
 import flask
 import requests
 
-from i8t.client import IntrospectClient, IntrospectDecorator, introspect
+from i8t import introspect
+from i8t.client import IntrospectClient
+from i8t.instrument.decorator_introspect import DecoratorIntrospect
 from i8t.instrument.flask_introspect import FlaskIntrospect
 from i8t.instrument.requests_introspect import RequestsIntrospect
 
@@ -11,12 +13,13 @@ app = flask.Flask(__name__)
 def main(app_: flask.Flask) -> None:
     introspect_client = IntrospectClient(
         session=requests.Session(),
-        api_url="https://api.demin.dev/i8t/toy",
+        # api_url="https://api.demin.dev/i8t/toy",
+        api_url="http://127.0.0.1:8000/i8t/toy",
         name="app",
     )
     FlaskIntrospect(introspect_client).register(app_)
     RequestsIntrospect(introspect_client).register()
-    IntrospectDecorator(introspect_client).register()
+    DecoratorIntrospect(introspect_client).register()
     app_.run(debug=True)
 
 
@@ -38,7 +41,18 @@ def another():
 
 @introspect
 def square(number: int) -> int:
-    return number**2
+    calc = MultiplyingCalculator()
+    return calc.mul(calc.identity(number), number)
+
+
+class MultiplyingCalculator:
+    @introspect
+    def mul(self, one: int, other: int) -> int:
+        return one * other
+
+    @introspect
+    def identity(self, arg: int) -> int:
+        return arg
 
 
 if __name__ == "__main__":
