@@ -4,10 +4,12 @@ from unittest import mock
 
 import requests
 
-from .client import IntrospectClient, logger
+from .client import IntrospectClient, IntrospectRequestsStorage, logger
 
 
 class TestIntrospectClient(unittest.TestCase):
+    API_URL = "http://example.com"
+
     def setUp(self) -> None:
         logger.setLevel(logging.ERROR)
         logger.addHandler(logging.StreamHandler())
@@ -16,7 +18,8 @@ class TestIntrospectClient(unittest.TestCase):
         # Arrange
         mock_session = mock.Mock(requests.Session)
         mock_session.post.return_value.status_code = 200
-        client = IntrospectClient(mock_session, "http://example.com", "test_client")
+        storage = IntrospectRequestsStorage(mock_session, self.API_URL)
+        client = IntrospectClient("http://example.com", "test_client", storage=storage)
 
         # Act
         client.send({"key": "value"})
@@ -28,7 +31,8 @@ class TestIntrospectClient(unittest.TestCase):
         # Arrange
         mock_session = mock.Mock(requests.Session)
         mock_session.post.return_value.status_code = 500
-        client = IntrospectClient(mock_session, "http://example.com", "test_client")
+        storage = IntrospectRequestsStorage(mock_session, self.API_URL)
+        client = IntrospectClient("http://example.com", "test_client", storage=storage)
 
         # Act
         with self.assertLogs(logger=logger, level="DEBUG") as log:
@@ -41,7 +45,8 @@ class TestIntrospectClient(unittest.TestCase):
         # Arrange
         mock_session = mock.Mock(requests.Session)
         mock_session.post.side_effect = Exception("Test exception")
-        client = IntrospectClient(mock_session, "http://example.com", "test_client")
+        storage = IntrospectRequestsStorage(mock_session, self.API_URL)
+        client = IntrospectClient("http://example.com", "test_client", storage=storage)
 
         # Act
         with self.assertLogs(logger=logger, level="ERROR") as log:
@@ -52,7 +57,7 @@ class TestIntrospectClient(unittest.TestCase):
 
     def test_make_checkpoint(self):
         # Arrange
-        client = IntrospectClient(None, "http://example.com", "test_client")
+        client = IntrospectClient("http://example.com", "test_client")
 
         # Act
         with mock.patch("time.time", return_value=5):

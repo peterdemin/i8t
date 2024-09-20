@@ -4,7 +4,7 @@ from unittest import mock
 import requests
 import requests_mock
 
-from ..client import IntrospectClient
+from ..client import IntrospectClient, IntrospectRequestsStorage
 from .requests_introspect import RequestsIntrospect
 
 
@@ -12,7 +12,11 @@ class RequestsIntrospectTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.mock_session = mock.Mock(requests.Session)
         self.introspect_client = mock.Mock(
-            wraps=IntrospectClient(self.mock_session, "http://api_url", "test"),
+            wraps=IntrospectClient(
+                "http://api_url",
+                "test",
+                storage=IntrospectRequestsStorage(self.mock_session, "api_url"),
+            ),
             api_url="http://api_url",
         )
         self.requests_introspect = RequestsIntrospect(self.introspect_client)

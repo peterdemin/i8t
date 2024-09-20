@@ -4,18 +4,17 @@ from unittest import mock
 from unittest.mock import patch
 
 import flask
-import requests
 
-from ..client import IntrospectClient
+from ..client import IntrospectClient, IntrospectInMemoryStorage
 from .flask_introspect import FlaskIntrospect
 
 
 class TestFlaskIntrospect(unittest.TestCase):
     def setUp(self):
         self.app = flask.Flask(__name__)
-        self.mock_session = mock.Mock(requests.Session)
+        self.storage = IntrospectInMemoryStorage()
         self.mock_client = mock.Mock(
-            wraps=IntrospectClient(self.mock_session, "api_url", "test_client")
+            wraps=IntrospectClient("api_url", "test_client", storage=self.storage)
         )
         self.flask_introspect = FlaskIntrospect(self.mock_client)
         self.flask_introspect.register(self.app)
@@ -27,12 +26,8 @@ class TestFlaskIntrospect(unittest.TestCase):
 
     @patch("time.time", side_effect=[1, 5, 30, 100])
     def test_before_and_after_request(self, _):
-        # Use Flask's test client to simulate requests
         with self.app.test_client() as client:
-            # Act: send a POST request to the /test route
             client.post("/test", data="Test Body", headers={"Test-Header": "HeaderValue"})
-
-            # Assert: Check if the before_request correctly sets the start time
             self.assertEqual(flask.g.start_time, 1)
 
         # Assert: Check if the after_request triggers the introspect client
