@@ -41,19 +41,38 @@ def another():
 
 @introspect
 def square(number: int) -> int:
-    calc = MultiplyingCalculator()
-    return calc.mul(calc.identity(number), number)
+    multiplier = Multiplier(number)
+    calc = Calculator()
+    calc.calculate(multiplier, number)
+    return calc.calculate2(number)
 
 
-class MultiplyingCalculator:
+class Multiplier:
+    def __init__(self, number: int) -> None:
+        self._number = number
+
     @introspect
-    def mul(self, one: int, other: int) -> int:
-        return one * other
+    def mul(self, number: int) -> int:
+        return self._number * number
 
     @introspect
     def identity(self, arg: int) -> int:
         return arg
 
+    def __eq__(self, other: object) -> bool:
+        return self._number == getattr(other, "_number", None)
+
+
+class Calculator:
+    @introspect
+    def calculate(self, multiplier: Multiplier, number: int) -> int:
+        return multiplier.mul(multiplier.identity(number))
+
+    @introspect
+    def calculate2(self, number: int) -> int:
+        multiplier = Multiplier(number)
+        return multiplier.mul(multiplier.identity(number))
+
 
 if __name__ == "__main__":
-    main(app)
+    main(app)  # pragma: no cover

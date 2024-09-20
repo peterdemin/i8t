@@ -59,7 +59,7 @@ lint: ## check style with pylint
 
 .PHONY: test
 test: ## run test suite
-	pytest --cov=$(PROJ) --cov=toy $(PROJ_ROOT)
+	pytest --cov=$(PROJ) --cov=toy $(PROJ_ROOT) --cov-fail-under=100
 
 .PHONY: install
 install: ## install the package with dev dependencies

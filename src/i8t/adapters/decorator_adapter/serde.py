@@ -1,6 +1,7 @@
 import base64
-import pickle
 from typing import Any, Tuple
+
+import dill  # type: ignore
 
 
 class DecoratorSerde:
@@ -20,7 +21,7 @@ class DecoratorSerde:
         )
 
     def _decode(self, obj_str) -> Any:
-        return pickle.loads(base64.b85decode(obj_str.encode("utf-8")))
+        return dill.loads(base64.b85decode(obj_str.encode("utf-8")))
 
     def _encode(self, obj) -> str:
-        return base64.b85encode(pickle.dumps(obj)).decode("utf-8")
+        return base64.b85encode(dill.dumps(obj, recurse=True)).decode("utf-8")

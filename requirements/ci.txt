@@ -30,10 +30,6 @@ coverage[toml]==6.5.0
     # via
     #   -c requirements/local.txt
     #   pytest-cov
-dill==0.3.6
-    # via
-    #   -c requirements/local.txt
-    #   pylint
 docutils==0.19
     # via
     #   -c requirements/local.txt

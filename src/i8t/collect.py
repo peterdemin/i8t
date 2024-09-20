@@ -52,7 +52,7 @@ class CheckpointPoller:
     def poll_once(self) -> Iterable[str]:
         yield from self._checkpoint_collector.filter_new(self._checkpoint_fetcher.fetch())
 
-    def run_forever(self) -> Iterable[str]:
+    def iter_lines(self) -> Iterable[str]:
         while True:
             try:
                 yield from self.poll_once()
@@ -62,19 +62,21 @@ class CheckpointPoller:
             except Exception as exc:  # pylint: disable=broad-except
                 print(f"WARNING: {exc}", file=sys.stderr)
 
+    def print_forever(self) -> None:
+        for i, line in enumerate(self.iter_lines()):
+            print(f"\rCollected {i+1} checkpoints. Press Ctrl+C to stop.", file=sys.stderr, end="")
+            print(line)
+
 
 def main(session: Optional[requests.Session] = None) -> None:
-    checkpoint_poller = CheckpointPoller(
+    CheckpointPoller(
         checkpoint_fetcher=CheckpointFetcher(
             api_url=sys.argv[1],
             session=session or requests.Session(),
         ),
         checkpoint_collector=CheckpointCollector(),
-    )
-    for i, line in enumerate(checkpoint_poller.run_forever()):
-        print(f"\rCollected {i+1} checkpoints. Press Ctrl+C to stop.", file=sys.stderr, end="")
-        print(line)
+    ).print_forever()
 
 
 if __name__ == "__main__":
-    main()
+    main()  # pragma: no cover

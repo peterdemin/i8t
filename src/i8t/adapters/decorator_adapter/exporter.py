@@ -33,10 +33,7 @@ class DecoratorExporter:
             # https://peps.python.org/pep-3155/
             class_name = ""
             if args:
-                try:
-                    class_name = args[0].__class__.__name__
-                except AttributeError:
-                    pass
+                class_name = args[0].__class__.__name__
             if func.__qualname__ == f"{class_name}.{func.__name__}":
                 return True
         return False
