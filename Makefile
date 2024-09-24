@@ -81,6 +81,7 @@ lock: ## lock versions of third-party dependencies
 		--allow-unsafe \
 		--use-cache \
 		--autoresolve \
+		--skip-constraints \
 		--no-upgrade
 
 .PHONY: upgrade
@@ -88,6 +89,7 @@ upgrade: ## upgrade versions of third-party dependencies
 	pip-compile-multi \
 		--allow-unsafe \
 		--autoresolve \
+		--skip-constraints \
 		--use-cache
 
 .PHONY: fmt

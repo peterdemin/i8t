@@ -59,7 +59,7 @@ jobs:
           python -m pip install -r requirements/ci.txt
       - name: Run tests
         run:
-          pytest --cov=i8t --cov=toy src/i8t toy --cov-report=xml --cov-branch --cov-fail-under=95
+          pytest --cov=i8t --cov=toy src/i8t toy --cov-report=xml --cov-fail-under=95
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
