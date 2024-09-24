@@ -11,6 +11,7 @@ sphinx
 # packages
 pip-compile-multi
 twine
+bump2version
 
 # debugging
 ipython
