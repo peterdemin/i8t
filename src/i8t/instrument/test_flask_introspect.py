@@ -1,11 +1,12 @@
-import json
 import unittest
 from unittest import mock
 from unittest.mock import patch
 
 import flask
 
-from ..client import IntrospectClient, IntrospectInMemoryStorage
+from i8t.client import IntrospectClient
+from i8t.inmemory_storage import IntrospectInMemoryStorage
+
 from .flask_introspect import FlaskIntrospect
 
 
@@ -36,32 +37,28 @@ class TestFlaskIntrospect(unittest.TestCase):
                 "location": "test_client/flask",
                 "start_ts": 1,
                 "finish_ts": 5,
-                "input": json.dumps(
-                    {
-                        "method": "POST",
-                        "url": "http://localhost/test",
-                        "headers": {
-                            "User-Agent": "Werkzeug/3.0.4",
-                            "Host": "localhost",
-                            "Content-Length": "9",
-                            "Test-Header": "HeaderValue",
-                        },
-                        "args": {},
-                        "form": {},
-                        "json": None,
-                        "data": "Test Body",
-                    }
-                ),
-                "output": json.dumps(
-                    {
-                        "status_code": 200,
-                        "headers": {
-                            "Content-Type": "text/html; charset=utf-8",
-                            "Content-Length": "13",
-                        },
-                        "body": "Test Response",
-                    }
-                ),
+                "input": {
+                    "method": "POST",
+                    "url": "http://localhost/test",
+                    "headers": {
+                        "User-Agent": "Werkzeug/3.0.4",
+                        "Host": "localhost",
+                        "Content-Length": "9",
+                        "Test-Header": "HeaderValue",
+                    },
+                    "args": {},
+                    "form": {},
+                    "json": None,
+                    "data": "Test Body",
+                },
+                "output": {
+                    "status_code": 200,
+                    "headers": {
+                        "Content-Type": "text/html; charset=utf-8",
+                        "Content-Length": "13",
+                    },
+                    "body": "Test Response",
+                },
             }
         )
 

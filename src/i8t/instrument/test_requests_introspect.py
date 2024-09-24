@@ -4,7 +4,9 @@ from unittest import mock
 import requests
 import requests_mock
 
-from ..client import IntrospectClient, IntrospectRequestsStorage
+from i8t.relay_storage import RelayStorage
+
+from ..client import IntrospectClient
 from .requests_introspect import RequestsIntrospect
 
 
@@ -15,7 +17,7 @@ class RequestsIntrospectTestCase(unittest.TestCase):
             wraps=IntrospectClient(
                 "http://api_url",
                 "test",
-                storage=IntrospectRequestsStorage(self.mock_session, "api_url"),
+                storage=RelayStorage(self.mock_session, "api_url"),
             ),
             api_url="http://api_url",
         )
@@ -35,8 +37,13 @@ class RequestsIntrospectTestCase(unittest.TestCase):
                 "location": "test/requests",
                 "start_ts": mock.ANY,
                 "finish_ts": mock.ANY,
-                "input": '{"method": "post", "url": "http://external-api", "headers": {}, "body": null}',
-                "output": '{"status_code": 200, "headers": {}, "body": "ok"}',
+                "input": {
+                    "method": "post",
+                    "url": "http://external-api",
+                    "headers": {},
+                    "body": None,
+                },
+                "output": {"status_code": 200, "headers": {}, "body": "ok"},
             }
         )
 
@@ -50,8 +57,13 @@ class RequestsIntrospectTestCase(unittest.TestCase):
                 "location": "test/requests",
                 "start_ts": mock.ANY,
                 "finish_ts": mock.ANY,
-                "input": '{"method": "post", "url": "http://external-api/fail", "headers": {}, "body": null}',
-                "output": '{"status_code": 500, "headers": {}, "body": ""}',
+                "input": {
+                    "method": "post",
+                    "url": "http://external-api/fail",
+                    "headers": {},
+                    "body": None,
+                },
+                "output": {"status_code": 500, "headers": {}, "body": ""},
             }
         )
 
@@ -65,8 +77,13 @@ class RequestsIntrospectTestCase(unittest.TestCase):
                 "location": "test/requests",
                 "start_ts": mock.ANY,
                 "finish_ts": mock.ANY,
-                "input": '{"method": "post", "url": "http://external-api/fail", "headers": {}, "body": null}',
-                "output": '{"error": ""}',
+                "input": {
+                    "method": "post",
+                    "url": "http://external-api/fail",
+                    "headers": {},
+                    "body": None,
+                },
+                "output": {"error": ""},
             }
         )
 

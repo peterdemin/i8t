@@ -1,7 +1,8 @@
 import unittest
 from unittest import mock
 
-from i8t.client import IntrospectClient, IntrospectInMemoryStorage
+from i8t.client import IntrospectClient
+from i8t.inmemory_storage import IntrospectInMemoryStorage
 
 from .decorator_introspect import DecoratorIntrospect, introspect
 
@@ -27,8 +28,8 @@ class TestDecoratorIntrospect(unittest.TestCase):
                 "location": "test_client/i8t.instrument.test_decorator_introspect.dummy_func",
                 "start_ts": 1000,
                 "finish_ts": 2000,
-                "input": '"fCQBt000000001elqie@VRC14luH3i0)~`~25Wa=a%XdteUx=B"',
-                "output": '"fCNheE&"',
+                "input": "fCQBt000000001elqie@VRC14luH3i0)~`~25Wa=a%XdteUx=B",
+                "output": "fCNheE&",
             },
         ]
 
@@ -43,8 +44,8 @@ class TestDecoratorIntrospect(unittest.TestCase):
                 "location": "test_client/i8t.instrument.test_decorator_introspect.Dummy.method",
                 "start_ts": 1000,
                 "finish_ts": 2000,
-                "input": '"fCQBr000000001elqie@VRC14luHAJl#B*zcVTj8bCi9QbuI"',
-                "output": '"fCNhhE&"',
+                "input": "fCQBr000000001elqie@VRC14luHAJl#B*zcVTj8bCi9QbuI",
+                "output": "fCNhhE&",
             },
         ]
 
@@ -59,15 +60,15 @@ class TestDecoratorIntrospect(unittest.TestCase):
                 "location": "test_client/i8t.instrument.test_decorator_introspect.Dummy.nested.<locals>.func",
                 "start_ts": 2,
                 "finish_ts": 3,
-                "input": '"fCQBt000000001elqie@VRC14luH9k28NW325Wa=a%XdteUx=B"',
-                "output": '"fCNhkE&"',
+                "input": "fCQBt000000001elqie@VRC14luH9k28NW325Wa=a%XdteUx=B",
+                "output": "fCNhkE&",
             },
             {
                 "location": "test_client/i8t.instrument.test_decorator_introspect.Dummy.nested",
                 "start_ts": 1,
                 "finish_ts": 4,
-                "input": '"fCQBr000000001elqie@VRC14luHAJl#B*zcVTj8bCi9QbuI"',
-                "output": '"fCNhnE&"',
+                "input": "fCQBr000000001elqie@VRC14luHAJl#B*zcVTj8bCi9QbuI",
+                "output": "fCNhnE&",
             },
         ]
 
@@ -88,8 +89,8 @@ class TestDecoratorIntrospect(unittest.TestCase):
                 "location": "test_client/i8t.instrument.test_decorator_introspect.dummy_raise",
                 "start_ts": 1000,
                 "finish_ts": 2000,
-                "input": '"fCQBt000000001elqie@VRC14luH3i0)~`~25Wa=a%XdteUx=B"',
-                "output": '"fCQBt000000001el#B&sa&m8Sl#C8kWpi{OWq4y{aCB*JZj^H_"',
+                "input": "fCQBt000000001elqie@VRC14luH3i0)~`~25Wa=a%XdteUx=B",
+                "output": "fCQBt000000001el#B&sa&m8Sl#C8kWpi{OWq4y{aCB*JZj^H_",
             },
         ]
 

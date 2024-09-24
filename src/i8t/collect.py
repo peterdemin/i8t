@@ -5,6 +5,8 @@ from typing import Iterable, Optional, Set
 
 import requests
 
+from .relay_storage import RelayConverter
+
 
 class CheckpointCollector:
     def __init__(self) -> None:
@@ -22,18 +24,12 @@ class CheckpointFetcher:
     def __init__(self, api_url: str, session: requests.Session) -> None:
         self._api_url = api_url
         self._session = session
+        self._relay_converter = RelayConverter()
 
     def fetch(self) -> Iterable[str]:
         response = self._session.get(self._api_url, timeout=1)
         for record in response.json():
-            yield json.dumps(self._parse(record))
-
-    def _parse(self, record: dict) -> dict:
-        return dict(
-            record,
-            input=json.loads(record["input"]),
-            output=json.loads(record["output"]),
-        )
+            yield json.dumps(self._relay_converter.from_relay(record))
 
 
 class CheckpointPoller:
