@@ -46,6 +46,11 @@ dist: clean ## builds source and wheel package
 release: dist ## package and upload a release
 	twine upload dist/*
 
+.PHONY: autorelease
+autorelease: ## Release the next patch version through CI
+	bumpversion patch
+	git push --follow-tags
+
 $(PEX) pex:
 	pex . -e $(PROJ).cli:cli --validate-entry-point -o $(PEX)
 
