@@ -32,34 +32,45 @@ jobs:
         - "3.10"
         - "3.11"
         - "3.12"
-        dev:
-        - -dev
         platform:
-        - ubuntu-latest
         - macos-latest
         - windows-latest
-        include:
-        - python: "3.8"
-          platform: ubuntu-latest
-        - python: "3.9"
-          platform: ubuntu-latest
-        - python: "3.10"
-          platform: ubuntu-latest
-        - python: pypy3.9
-          platform: ubuntu-latest
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}${{ matrix.dev }}
+          python-version: ${{ matrix.python }}
       - name: Install dependencies
         run: |
           python -m pip install -r requirements/ci.txt
       - name: Run tests
         run:
-          pytest --cov=i8t --cov=toy src/i8t toy --cov-report=xml --cov-fail-under=95
+          pytest src/i8t toy
+
+  test-with-coverage:
+    strategy:
+      matrix:
+        python:
+        - "3.8"
+        - "3.9"
+        - "3.10"
+        - "3.11"
+        - "3.12"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements/ci.txt
+      - name: Run tests
+        run:
+          pytest --cov=i8t --cov=toy src/i8t toy --cov-report=xml --cov-fail-under=95 --cov-branch
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -78,16 +89,17 @@ jobs:
           python -m pip install -r requirements/ci.txt
       - name: Run lint
         run:
-          pylint src/i8t
+          pylint src/i8t toy
       - name: Run mypy
         run:
-          mypy src/i8t
+          mypy src/i8t toy
 
   check:  # This job does nothing and is only used for the branch protection
     if: always()
 
     needs:
     - test
+    - test-with-coverage
     - lint
 
     runs-on: ubuntu-latest
@@ -109,7 +121,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: "3.12"
       - name: Install tox
         run: |
           python -m pip install tox
