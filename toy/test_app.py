@@ -12,7 +12,7 @@ from i8t.testing.session import IntrospectSession
 
 from .app import Calculator, Multiplier, app, main, square
 
-PYVERSION = "py" + "".join(map(str, sys.version_info[:2])).replace("9", "8")
+PYVERSION = "py{v[0]}.{v[1]}".format(v=sys.version_info)
 
 SESSION = IntrospectSession.from_jsonl(
     os.path.join(
