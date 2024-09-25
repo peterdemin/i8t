@@ -28,7 +28,7 @@ def example_route():
     response = requests.post(
         app.url_for("another", _external=True),
         json={"number": int(flask.request.values.get("number", "0"))},
-        timeout=1.0,
+        timeout=10.0,
     )
     response.raise_for_status()
     return {"message": response.json()}

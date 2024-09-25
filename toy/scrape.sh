@@ -15,4 +15,4 @@ curl 'http://127.0.0.1:5000/example?number=-1'
 
 kill %%
 
-i8t ${I8T_URL} > toy/testdata/session-00.jsonl
+i8t ${I8T_URL} > out/session-00.jsonl
