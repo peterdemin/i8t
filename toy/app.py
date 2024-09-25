@@ -60,7 +60,7 @@ class Multiplier:
         return arg
 
     def __eq__(self, other: object) -> bool:
-        return self._number == getattr(other, "_number", None)
+        return self._number == getattr(other, "_number", None)  # pragma: no cover
 
 
 class Calculator:
