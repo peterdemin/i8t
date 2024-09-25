@@ -16,3 +16,6 @@ bump2version
 # debugging
 ipython
 ipdb
+
+# testing
+tox

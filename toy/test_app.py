@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from unittest import mock
 
 import pytest
@@ -11,11 +12,13 @@ from i8t.testing.session import IntrospectSession
 
 from .app import Calculator, Multiplier, app, main, square
 
+PYVERSION = "py" + "".join(map(str, sys.version_info[:2])).replace("9", "8")
+
 SESSION = IntrospectSession.from_jsonl(
     os.path.join(
         os.path.dirname(__file__),
         "testdata",
-        "session-01.jsonl",
+        f"session-01-{PYVERSION}.jsonl",
     ),
     main_is="toy.app",
 )

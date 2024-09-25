@@ -58,15 +58,15 @@ mypy-extensions==0.4.3
     # via mypy
 nodeenv==1.7.0
     # via pyright
-packaging==21.3
+packaging==24.1
     # via
     #   build
     #   pytest
 pep517==0.13.0
     # via build
-platformdirs==2.5.4
+platformdirs==4.3.6
     # via pylint
-pluggy==1.0.0
+pluggy==1.5.0
     # via pytest
 pycodestyle==2.10.0
     # via flake8
@@ -74,8 +74,6 @@ pyflakes==3.0.1
     # via flake8
 pylint==2.15.8
     # via -r requirements/ci.in
-pyparsing==3.0.9
-    # via packaging
 pyright==1.1.380
     # via -r requirements/ci.in
 pytest==7.2.0

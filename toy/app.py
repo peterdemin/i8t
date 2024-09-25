@@ -1,3 +1,5 @@
+import os
+
 import flask
 import requests
 
@@ -12,8 +14,7 @@ app = flask.Flask(__name__)
 
 def main(app_: flask.Flask) -> None:
     introspect_client = IntrospectClient(
-        # api_url="https://api.demin.dev/i8t/toy",
-        api_url="http://127.0.0.1:8000/i8t/toy",
+        api_url=os.environ.get("I8T_URL", "https://api.demin.dev/i8t/toy"),
         name="app",
     )
     FlaskIntrospect(introspect_client).register(app_)
@@ -57,6 +58,9 @@ class Multiplier:
     @introspect
     def identity(self, arg: int) -> int:
         return arg
+
+    def __eq__(self, other: object) -> bool:
+        return self._number == getattr(other, "_number", None)
 
 
 class Calculator:
