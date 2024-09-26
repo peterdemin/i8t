@@ -72,9 +72,13 @@ class TestIntrospectClient(unittest.TestCase):
         self.assertEqual(
             checkpoint,
             {
-                "location": "test_client/location1",
-                "start_ts": 1,
-                "finish_ts": 5,
+                "metadata": {
+                    "name": "test_client",
+                    "location": "location1",
+                    "start_ts": 1,
+                    "finish_ts": 5,
+                    "context": "",
+                },
                 "input": {"input": "data"},
                 "output": {"output": "data"},
             },

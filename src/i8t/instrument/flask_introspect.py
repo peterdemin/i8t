@@ -17,7 +17,9 @@ class FlaskIntrospect:
 
     def before_request(self) -> None:
         flask.g.start_time = time.time()
+        self._client.start_context()
 
     def after_request(self, response: flask.Response) -> flask.Response:
         self._flask_adapter.record(flask.g.start_time, flask.request, response)
+        self._client.reset_context()
         return response

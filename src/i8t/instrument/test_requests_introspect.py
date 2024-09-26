@@ -34,9 +34,13 @@ class RequestsIntrospectTestCase(unittest.TestCase):
         assert got.text == "ok"
         self.introspect_client.send.assert_called_once_with(
             {
-                "location": "test/requests",
-                "start_ts": mock.ANY,
-                "finish_ts": mock.ANY,
+                "metadata": {
+                    "name": "test",
+                    "location": "requests",
+                    "start_ts": mock.ANY,
+                    "finish_ts": mock.ANY,
+                    "context": "",
+                },
                 "input": {
                     "method": "post",
                     "url": "http://external-api",
@@ -54,9 +58,13 @@ class RequestsIntrospectTestCase(unittest.TestCase):
         assert got.status_code == 500
         self.introspect_client.send.assert_called_once_with(
             {
-                "location": "test/requests",
-                "start_ts": mock.ANY,
-                "finish_ts": mock.ANY,
+                "metadata": {
+                    "name": "test",
+                    "location": "requests",
+                    "start_ts": mock.ANY,
+                    "finish_ts": mock.ANY,
+                    "context": "",
+                },
                 "input": {
                     "method": "post",
                     "url": "http://external-api/fail",
@@ -74,9 +82,13 @@ class RequestsIntrospectTestCase(unittest.TestCase):
             requests.post("http://external-api/fail", json={"key": "value"}, timeout=1)
         self.introspect_client.send.assert_called_once_with(
             {
-                "location": "test/requests",
-                "start_ts": mock.ANY,
-                "finish_ts": mock.ANY,
+                "metadata": {
+                    "name": "test",
+                    "location": "requests",
+                    "start_ts": mock.ANY,
+                    "finish_ts": mock.ANY,
+                    "context": "",
+                },
                 "input": {
                     "method": "post",
                     "url": "http://external-api/fail",

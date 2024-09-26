@@ -14,9 +14,11 @@ class RelayStorage(IntrospectStorage):
         self._session = session
         self._relay_converter = RelayConverter()
 
-    def save(self, data: dict) -> None:
+    def save(self, checkpoint: dict) -> None:
         try:
-            response = self._session.post(self._api_url, json=self._relay_converter.to_relay(data))
+            response = self._session.post(
+                self._api_url, json=self._relay_converter.to_relay(checkpoint)
+            )
             if response.status_code != 200:
                 logger.error("Failed to send checkpoint: %r", response.text)
         except Exception:  # pylint: disable=broad-except
@@ -25,17 +27,17 @@ class RelayStorage(IntrospectStorage):
 
 class RelayConverter:
     @staticmethod
-    def from_relay(data: dict) -> dict:
+    def from_relay(checkpoint: dict) -> dict:
         return dict(
-            data,
-            input=json.loads(data["input"]),
-            output=json.loads(data["output"]),
+            checkpoint,
+            input=json.loads(checkpoint["input"]),
+            output=json.loads(checkpoint["output"]),
         )
 
     @staticmethod
-    def to_relay(data: dict) -> dict:
+    def to_relay(checkpoint: dict) -> dict:
         return dict(
-            data,
-            input=json.dumps(data["input"]),
-            output=json.dumps(data["output"]),
+            checkpoint,
+            input=json.dumps(checkpoint["input"]),
+            output=json.dumps(checkpoint["output"]),
         )

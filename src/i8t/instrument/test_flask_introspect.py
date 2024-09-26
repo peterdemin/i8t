@@ -34,9 +34,13 @@ class TestFlaskIntrospect(unittest.TestCase):
         # Assert: Check if the after_request triggers the introspect client
         self.mock_client.send.assert_called_once_with(
             {
-                "location": "test_client/flask",
-                "start_ts": 1,
-                "finish_ts": 5,
+                "metadata": {
+                    "name": "test_client",
+                    "location": "flask",
+                    "start_ts": 1,
+                    "finish_ts": 5,
+                    "context": mock.ANY,
+                },
                 "input": {
                     "method": "POST",
                     "url": "http://localhost/test",
@@ -78,9 +82,13 @@ class TestFlaskIntrospect(unittest.TestCase):
             # Assert: after_request sends data to the introspect client
             self.mock_client.send.assert_called_once_with(
                 {
-                    "location": "test_client/flask",
-                    "start_ts": 1,
-                    "finish_ts": 5,
+                    "metadata": {
+                        "name": "test_client",
+                        "location": "flask",
+                        "start_ts": 1,
+                        "finish_ts": 5,
+                        "context": mock.ANY,
+                    },
                     "input": mock.ANY,
                     "output": mock.ANY,
                 }

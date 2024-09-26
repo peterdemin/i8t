@@ -23,13 +23,19 @@ class TestDecoratorIntrospect(unittest.TestCase):
             result = dummy_func(1, 2)
 
         self.assertEqual(result, 3)
-        assert self.storage.records == [
+        assert self.storage.checkpoints == [
             {
-                "location": "test_client/i8t.instrument.test_decorator_introspect.dummy_func",
-                "start_ts": 1000,
-                "finish_ts": 2000,
-                "input": "fCQBt000000001elqie@VRC14luH3i0)~`~25Wa=a%XdteUx=B",
-                "output": "fCNheE&",
+                "metadata": {
+                    "name": "test_client",
+                    "location": "i8t.instrument.test_decorator_introspect.dummy_func",
+                    "start_ts": 1000,
+                    "finish_ts": 2000,
+                    "context": "",
+                    "input_hint": "json",
+                    "output_hint": "json",
+                },
+                "input": '{"args": [1, 2], "kwargs": {}}',
+                "output": "3",
             },
         ]
 
@@ -39,13 +45,19 @@ class TestDecoratorIntrospect(unittest.TestCase):
             result = dummy.method(3)
 
         self.assertEqual(result, 6)
-        assert self.storage.records == [
+        assert self.storage.checkpoints == [
             {
-                "location": "test_client/i8t.instrument.test_decorator_introspect.Dummy.method",
-                "start_ts": 1000,
-                "finish_ts": 2000,
-                "input": "fCQBr000000001elqie@VRC14luHAJl#B*zcVTj8bCi9QbuI",
-                "output": "fCNhhE&",
+                "metadata": {
+                    "name": "test_client",
+                    "location": "i8t.instrument.test_decorator_introspect.Dummy.method",
+                    "start_ts": 1000,
+                    "finish_ts": 2000,
+                    "context": "",
+                    "input_hint": "json",
+                    "output_hint": "json",
+                },
+                "input": '{"args": [3], "kwargs": {}}',
+                "output": "6",
             },
         ]
 
@@ -55,20 +67,32 @@ class TestDecoratorIntrospect(unittest.TestCase):
             result = dummy.nested(3)
 
         self.assertEqual(result, 12)
-        assert self.storage.records == [
+        assert self.storage.checkpoints == [
             {
-                "location": "test_client/i8t.instrument.test_decorator_introspect.Dummy.nested.<locals>.func",
-                "start_ts": 2,
-                "finish_ts": 3,
-                "input": "fCQBt000000001elqie@VRC14luH9k28NW325Wa=a%XdteUx=B",
-                "output": "fCNhkE&",
+                "metadata": {
+                    "name": "test_client",
+                    "location": "i8t.instrument.test_decorator_introspect.Dummy.nested.<locals>.func",
+                    "start_ts": 2,
+                    "finish_ts": 3,
+                    "context": "",
+                    "input_hint": "json",
+                    "output_hint": "json",
+                },
+                "input": '{"args": [3, 6], "kwargs": {}}',
+                "output": "9",
             },
             {
-                "location": "test_client/i8t.instrument.test_decorator_introspect.Dummy.nested",
-                "start_ts": 1,
-                "finish_ts": 4,
-                "input": "fCQBr000000001elqie@VRC14luHAJl#B*zcVTj8bCi9QbuI",
-                "output": "fCNhnE&",
+                "metadata": {
+                    "name": "test_client",
+                    "location": "i8t.instrument.test_decorator_introspect.Dummy.nested",
+                    "start_ts": 1,
+                    "finish_ts": 4,
+                    "context": "",
+                    "input_hint": "json",
+                    "output_hint": "json",
+                },
+                "input": '{"args": [3], "kwargs": {}}',
+                "output": "12",
             },
         ]
 
@@ -76,7 +100,7 @@ class TestDecoratorIntrospect(unittest.TestCase):
         # Disable introspect decorator and check that checkpoint is not sent
         self.decorator.unregister()
         self.assertEqual(dummy_func(1, 2), 3)
-        assert not self.storage.records
+        assert not self.storage.checkpoints
 
     def test_exception_introspected(self):
         # Act & Assert
@@ -84,13 +108,19 @@ class TestDecoratorIntrospect(unittest.TestCase):
             with self.assertRaises(ValueError):
                 dummy_raise(1, 2)
 
-        assert self.storage.records == [
+        assert self.storage.checkpoints == [
             {
-                "location": "test_client/i8t.instrument.test_decorator_introspect.dummy_raise",
-                "start_ts": 1000,
-                "finish_ts": 2000,
-                "input": "fCQBt000000001elqie@VRC14luH3i0)~`~25Wa=a%XdteUx=B",
-                "output": "fCQBt000000001el#B&sa&m8Sl#C8kWpi{OWq4y{aCB*JZj^H_",
+                "metadata": {
+                    "name": "test_client",
+                    "location": "i8t.instrument.test_decorator_introspect.dummy_raise",
+                    "start_ts": 1000,
+                    "finish_ts": 2000,
+                    "context": "",
+                    "input_hint": "json",
+                    "output_hint": "json",
+                },
+                "input": '{"args": [1, 2], "kwargs": {}}',
+                "output": '{"error": "Test exception"}',
             },
         ]
 

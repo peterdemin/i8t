@@ -1,3 +1,3 @@
-from .collect import main as cli
+from .relay_consumer import main as cli
 
 __all__ = ["cli"]

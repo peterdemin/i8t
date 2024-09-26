@@ -6,12 +6,12 @@ from .storage import IntrospectStorage
 
 class IntrospectInMemoryStorage(IntrospectStorage):
     def __init__(self) -> None:
-        self.records: List[dict] = []
+        self.checkpoints: List[dict] = []
 
-    def save(self, data: dict) -> None:
-        self.records.append(data)
+    def save(self, checkpoint: dict) -> None:
+        self.checkpoints.append(checkpoint)
 
     def dump(self, fobj: TextIO) -> None:
-        for record in self.records:
-            json.dump(record, fobj)
+        for checkpoint in self.checkpoints:
+            json.dump(checkpoint, fobj)
             fobj.write("\n")

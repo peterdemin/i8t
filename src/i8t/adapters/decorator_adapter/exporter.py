@@ -39,4 +39,4 @@ class DecoratorExporter:
         return False
 
     def _send(self, *args) -> None:
-        self._client.send(self._client.make_checkpoint(*self._serde.serialize(*args)))
+        self._client.send(self._client.make_checkpoint(**self._serde.serialize(*args)))
