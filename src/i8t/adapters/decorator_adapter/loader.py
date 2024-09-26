@@ -22,12 +22,12 @@ class DecoratedCase(TimeRange):
     def from_record(cls, raw_record: dict) -> "DecoratedCase":
         record = cls._serde.deserialize(raw_record)
         return cls(
-            start_ts=record["start_ts"],
-            finish_ts=record["finish_ts"],
+            start_ts=record["metadata"]["start_ts"],
+            finish_ts=record["metadata"]["finish_ts"],
             args=record["input"]["args"],
             kwargs=record["input"]["kwargs"],
             expected=record["output"],
-            qualname=record["location"].partition("/")[2],
+            qualname=record["metadata"]["location"],
         )
 
     @classmethod
@@ -100,15 +100,15 @@ class DecoratorFilter:
         self._within = within
 
     def __call__(self, record: dict) -> bool:
-        return self._match_location(record["location"]) and self._match_within(record)
+        return self._match_location(record["metadata"]["location"]) and self._match_within(record)
 
     def _match_location(self, location: str) -> bool:
-        return fnmatch.fnmatch(location.partition("/")[2], "*" + self._name)
+        return fnmatch.fnmatch(location, "*" + self._name)
 
     def _match_within(self, record: dict) -> bool:
         if not self._within:
             return True
         return (
-            record["start_ts"] >= self._within.start_ts
-            and record["finish_ts"] <= self._within.finish_ts
+            record["metadata"]["start_ts"] >= self._within.start_ts
+            and record["metadata"]["finish_ts"] <= self._within.finish_ts
         )

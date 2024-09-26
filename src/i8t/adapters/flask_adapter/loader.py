@@ -27,8 +27,8 @@ class FlaskCase(TimeRange):  # pylint: disable=too-many-instance-attributes
     @classmethod
     def from_record(cls, record: dict) -> "FlaskCase":
         return cls(
-            start_ts=record["start_ts"],
-            finish_ts=record["finish_ts"],
+            start_ts=record["metadata"]["start_ts"],
+            finish_ts=record["metadata"]["finish_ts"],
             url=record["input"]["url"],
             method=record["input"]["method"],
             headers=record["input"]["headers"],
@@ -53,10 +53,12 @@ class FlaskFilter:
         self._path = path
 
     def __call__(self, record: dict) -> bool:
-        return self._match_location(record["location"]) and self._match_path(record["input"]["url"])
+        return self._match_location(record["metadata"]["location"]) and self._match_path(
+            record["input"]["url"]
+        )
 
     def _match_location(self, location: str) -> bool:
-        return location.partition("/")[2] == FlaskAdapter.LOCATION
+        return location == FlaskAdapter.LOCATION
 
     def _match_path(self, url: str) -> bool:
         return fnmatch.fnmatch(urlparse(url).path, self._path)

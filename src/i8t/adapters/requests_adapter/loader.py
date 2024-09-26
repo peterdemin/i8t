@@ -55,15 +55,15 @@ class RequestsFilter:
         self._within = within
 
     def __call__(self, record: dict) -> bool:
-        return self._match_location(record["location"]) and self._match_within(record)
+        return self._match_location(record["metadata"]["location"]) and self._match_within(record)
 
     def _match_location(self, location: str) -> bool:
-        return location.partition("/")[2] == RequestsAdapter.LOCATION
+        return location == RequestsAdapter.LOCATION
 
     def _match_within(self, record: dict) -> bool:
         if not self._within:
             return True
         return (
-            record["start_ts"] >= self._within.start_ts
-            and record["finish_ts"] <= self._within.finish_ts
+            record["metadata"]["start_ts"] >= self._within.start_ts
+            and record["metadata"]["finish_ts"] <= self._within.finish_ts
         )

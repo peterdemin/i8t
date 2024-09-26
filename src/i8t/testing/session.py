@@ -11,7 +11,9 @@ class IntrospectSession:
         with open(jsonl, encoding="utf-8") as fobj:
             records = [json.loads(line.strip()) for line in fobj]
         for record in records:
-            record["location"] = record["location"].replace("__main__", main_is)
+            record["metadata"]["location"] = record["metadata"]["location"].replace(
+                "__main__", main_is
+            )
         return cls(records)
 
     def filter_by(self, filter_func: Callable[[dict], bool]) -> List[dict]:

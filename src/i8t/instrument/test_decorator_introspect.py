@@ -61,6 +61,44 @@ class TestDecoratorIntrospect(unittest.TestCase):
             },
         ]
 
+    def test_non_json_method_introspected(self):
+        dummy = Dummy()
+        with mock.patch("time.time", side_effect=[1, 2, 3, 4]):
+            result = dummy.non_json(dummy, 3)
+
+        self.assertEqual(result, 6)
+        assert self.storage.checkpoints == [
+            {
+                "input": '{"args": [3], "kwargs": {}}',
+                "metadata": {
+                    "context": "",
+                    "finish_ts": 3,
+                    "input_hint": "json",
+                    "location": "i8t.instrument.test_decorator_introspect.Dummy.method",
+                    "name": "test_client",
+                    "output_hint": "json",
+                    "start_ts": 2,
+                },
+                "output": "6",
+            },
+            {
+                "input": (
+                    "fCQCO000000001elqie@VRC14l#D28ICL&)ZgX^Ub!}yCbS`vdb97&1Wn*u0VRUbDUukZ1a"
+                    "&L2RWn*-dj0Hq>ZEbm!lawieluHAKl#B*zcVTj8bCi9QbuI"
+                ),
+                "metadata": {
+                    "context": "",
+                    "finish_ts": 4,
+                    "input_hint": "dill",
+                    "location": "i8t.instrument.test_decorator_introspect.Dummy.non_json",
+                    "name": "test_client",
+                    "output_hint": "json",
+                    "start_ts": 1,
+                },
+                "output": "6",
+            },
+        ]
+
     def test_nested_function_introspected(self):
         dummy = Dummy()
         with mock.patch("time.time", side_effect=[1, 2, 3, 4]):
@@ -147,3 +185,7 @@ class Dummy:
             return first + second
 
         return func(param, param * 2) + param
+
+    @introspect
+    def non_json(self, dummy: "Dummy", param: int) -> int:
+        return dummy.method(param)
